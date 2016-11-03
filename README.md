@@ -1,4 +1,5 @@
 jquery.ngaudio.js
+https://github.com/nukegold/ngaudio
 
 Nov 03, 2016 - First version
 
