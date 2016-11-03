@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>NgAudio Advanced Demo</title>
+
+	<!-- CSS -->
+	<style>
+		.control {
+			height: 50px;
+			margin: 10px;
+			padding: 10px;
+			text-align: center;
+		}
+		
+		.pp {
+			position: absolute;
+			font-size: 2em;
+			line-height: 2em;
+			width: 2em;
+			height: 2em;
+		}
+		
+		.playpause {
+			border: 1px solid #000;
+			border-radius: 50%;
+			cursor: pointer;
+		}
+		
+		.playpause:hover {
+			background-color: rgba(238, 238, 238, 0.8);
+		}
+		
+		.play:before {
+			content: '►'
+		}
+		
+		.pause:before {
+			content: '❚❚'
+		}
+		
+		.st {
+			float: left;
+			width: 200px;
+			height: 200px;
+			margin: 10px;
+			border: 1px solid #000;
+			cursor: pointer;
+			background-size: contain !IMPORTANT;
+			text-align: center;
+		}
+		
+		.st:hover {
+			background-color: #eee
+		}
+		
+		.st.selected {
+			box-shadow: red 0px 0px 10px;
+		}
+		
+		.st.error {
+			background-color: #e00;
+		}
+		
+		.st1 {
+			background: url(http://www.dynamitepictures.co.uk/images/logos_grey/Broadcast_BBC1_left.gif) center center no-repeat;
+		}
+		
+		.st2 {
+			background: url(http://www.dynamitepictures.co.uk/images/logos_grey/Broadcast_BBC2_left.gif) center center no-repeat;
+		}
+		
+		.st3 {
+			background: url(http://streamcasting.com/wp-content/uploads/2015/10/shoutcast-logo.gif) center center no-repeat;
+		}
+		
+		.spinner {
+			border: #aaa 5px dashed;
+			border-radius: 50%;
+			margin: -6px 0 0 -6px;
+			padding: 2px;
+			-webkit-animation: spin 4s linear infinite;
+			-moz-animation: spin 4s linear infinite;
+			animation: spin 4s linear infinite;
+		}
+		
+		@-moz-keyframes spin {
+			100% {
+				-moz-transform: rotate(360deg);
+			}
+		}
+		
+		@-webkit-keyframes spin {
+			100% {
+				-webkit-transform: rotate(360deg);
+			}
+		}
+		
+		@keyframes spin {
+			100% {
+				-webkit-transform: rotate(360deg);
+				transform: rotate(360deg);
+			}
+		}
+	</style>
+
+	<!-- Javascript -->
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="../jquery.ngaudio.js"></script>
+
+	<script>
+        $(document).ready(function() {
+            var $player = $("#player");
+            
+            $player.on("ngaudio.stopped", function() { $("#playpause").removeClass("pause").addClass("play"); $("#spinner").hide() });
+            $player.on("ngaudio.playing", function() { $("#playpause").removeClass("play").addClass("pause"); $("#spinner").hide() });
+            $player.on("ngaudio.recovering", function() { $("#spinner").show() });
+
+            $(".st").click(function () {
+                $(".st").removeClass("selected error");
+                $(this).addClass("selected");
+
+				// Set the ngaudio plugin and play (notice that data-auto-play is set to "true")
+                $player.ngaudio({
+					url: $(this).data("url"),
+					callbackFailed: function() {
+                		$(".st.selected").addClass("error");
+            		}, 
+					callbackUrlFix: function(url) {
+						console.log("Fixed SHOUTcast URL: " + url)
+                		$(".st.selected").html("<b>fixed SHOUTcast URL</b>");
+            		} 
+				});
+
+            });
+
+            $("#playpause").click(function () {
+                var state = $player.ngaudio("getState");
+                if (state === 0) $player.ngaudio("play"); else $player.ngaudio("pause");;
+            });
+        });
+    </script>
+</head>
+
+<body>
+	<audio id="player" preload="none" data-auto-play="true"></audio>
+	<div class="main">
+		<div class="control">
+			<div id="spinner" class="pp spinner" style="display:none"></div>
+			<div id="playpause" class="pp playpause play"></div>
+		</div>
+		<div class="st st1" data-url="http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_q?s=1467576561&e=1467590961&h=f5d5cdf09d5fbeccbffd554a5a3cdbbf"></div>
+		<div class="st st2" data-url="http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio2_mf_q?s=1467577172&e=1467591572&h=3d337a5cbbdbd59940b703cbb2d0d280"></div>
+		<div class="st st3" data-url="http://78.47.96.202:8000"><small>SHOUTcast bad url</small></div>
+	</div>
+</body>
+
+</html>

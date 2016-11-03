@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>NgAudio Basic Demo</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <!-- jQuery.ngaudio -->
+    <script src="../jquery.ngaudio.js"></script>
+
+    <!-- CSS -->
+    <style>
+        .info { width: 300px; padding: 10px; background: #eee }
+    </style>
+
+    <!-- Javascript -->
+    <script>
+        $(document).ready(function() {
+            $("#player").ngaudio({url: "http://s2.kzradio.net/tunein/mp3/icecast.audio"});
+            
+            $("#player").on("ngaudio.stopped", function() { msg("Stopped") });
+            $("#player").on("ngaudio.playing", function() { msg("Playing") });
+            $("#player").on("ngaudio.recovering", function() { msg("Recovering started") });
+        });
+         
+        function msg(action) {          
+            var time = new Date();
+            $(".info").html(action + " at " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
+        }
+    </script>
+</head>
+
+<body>
+  <div class="main">
+      <audio id="player" preload="none" controls></audio>
+      <div class="info">info</div>
+  </div>
+</body>
+
+</html>
