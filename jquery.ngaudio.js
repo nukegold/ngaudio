@@ -1,5 +1,5 @@
 /*!
- * jQuery NGAudio, version: 0.0.1
+ * jQuery NGAudio, version: 0.0.2
  * Author: Nuke Goldstein
  *
  * Copyright jQuery Foundation and other contributors
@@ -37,8 +37,9 @@
             if (base.state && base.domPlayer.readyState === 4 && (base.domPlayer.networkState === 1 || base.domPlayer.networkState === 2)) {
                 // Trigger event if an altered stream player after the original failed to play this session
                 if (!base.streamWasLive && base.options.urlNew) {
-                    if (base.options.callbackUrlFix) base.options.callbackUrlFix(base.options.urlNew);
-                    base.options.urlNew = null;
+                    var newUrl = base.options.urlNew; 
+                    base.options.urlNew = null;     // do this first to prevent continuous callback calls in case of an exception in callback
+                    if (base.options.callbackUrlFix) base.options.callbackUrlFix(newUrl);
                 }
 
                 base.monitor.stop(1);
@@ -53,13 +54,12 @@
 
         // -------------------------------------------------------------------------------
 
-        base.setSource(base.options.url);
-
         base.getState = function () { return base.state; }
 
         base.play = function () {
             if (!base.options.url) return false;
 
+            this.domPlayer.pause();
             this.domPlayer.play();
             return true;
         }
@@ -105,10 +105,10 @@
                 base.setDomSource(base.options.urlNew);
             }
 
+            if (this.streamWasLive) this.domPlayer.pause();
             if (base.monitor.failsCounter++ >= base.options.recoverCycleCount) {
                 base.monitor.failsCounter = 0;
                 base.stateChange(0);
-                base.domPlayer.pause();
                 if (base.options.callbackFailed) base.options.callbackFailed();
             } else {
                 base.monitor.start();
@@ -133,6 +133,8 @@
     }
 
     NgAudio.prototype.setDomSource = function (url) {
+        if (this.$element.find('source').prop('src') === url) return false;
+
         var src = '<source src="' + (url || '#') + '">';
 
         if (url) {
@@ -141,21 +143,21 @@
             src += '<param name="src" value="http://www.google.com/reader/ui/3523697345-audio-player.swf"/><param name="quality" value="best"/></object>';
         }
 
-        if (this.$element.html() != src) {
-            this.$element.html(src);
-            return true;
-        } else return false;
+        this.$element.html(src);
+        return true;
     }
 
     NgAudio.prototype.setSource = function (url) {
-        this.streamWasLive = false;
-
         if (!this.setDomSource(url)) return;
 
-        this.domPlayer.pause();
+        if (this.streamWasLive) this.domPlayer.pause();
+        this.streamWasLive = false;
+
         if (url) {
             this.domPlayer.load();
             if (this.options.autoPlay) this.domPlayer.play();
+        } else {
+            this.stateChange(0);
         }
     }
 
